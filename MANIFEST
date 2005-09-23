@@ -1,3 +1,4 @@
+Build.PL
 Changes
 lib/aliased.pm
 Makefile.PL
@@ -5,6 +6,10 @@ MANIFEST
 META.yml			Module meta-data (added by MakeMaker)
 README
 t/10aliased.t
+t/20import.t
 t/lib/Really/Long/Module/Conflicting/Name.pm
 t/lib/Really/Long/Module/Name.pm
+t/lib/Really/Long/Name.pm
 t/lib/Really/Long/PackageName.pm
+t/pod-coverage.t
+t/pod.t

@@ -2,49 +2,47 @@
 use warnings;
 use strict;
 
-use Test::More tests => 15;
+use Test::More tests => 16;
+
 #use Test::More qw/no_plan/;
 
-BEGIN { 
+BEGIN {
     chdir 't' if -d 't';
     unshift @INC => '../lib', 'lib/';
     require_ok 'aliased' or die;
-    ok ! defined &main::echo,
-        '... and exported functions should not (yet) be in our namespace';
-};
+    ok !defined &main::echo,
+      '... and exported functions should not (yet) be in our namespace';
+}
 
+ok !defined &alias, 'aliased() should not be exported by default';
 eval "use aliased";
-ok $@, '... trying to use aliased without a package name should fail';
-like $@, qr/You must supply a package name to aliased/,
-    '... telling us how stupid we were';
+is $@, '', '... trying to use aliased without a package name should not fail';
+can_ok __PACKAGE__, 'alias';
 
 eval "use aliased 'No::Such::Module'";
-ok $@, 'Trying to use aliased with a module it cannot load should fail';
+ok $@,   'Trying to use aliased with a module it cannot load should fail';
 like $@, qr{Can't locate No/Such/Module.pm in \@INC},
-    '... and it should have an appropriate error message';
+  '... and it should have an appropriate error message';
 
 use aliased 'Really::Long::Module::Name';
 my $name = Name->new;
-isa_ok $name, 'Really::Long::Module::Name',
-    '... and the object it returns';
+isa_ok $name, 'Really::Long::Module::Name', '... and the object it returns';
 
-use aliased 'Really::Long::Module::Conflicting::Name' => 'C::Name', "echo"; 
-ok defined &main::echo,
-    '... and import items should be handled correctly';
-is_deeply [echo([1,2],3)], [[1,2],3],
-    '... and exhibit the correct behavior';
+use aliased 'Really::Long::Module::Conflicting::Name' => 'C::Name', "echo";
+ok defined &main::echo, '... and import items should be handled correctly';
+is_deeply [ echo( [ 1, 2 ], 3 ) ], [ [ 1, 2 ], 3 ],
+  '... and exhibit the correct behavior';
 ok $name = C::Name->new,
-    'We should be able to alias to different packages, even though that is really stupid';
+'We should be able to alias to different packages, even though that is really stupid';
 isa_ok $name, 'Really::Long::Module::Conflicting::Name',
-     '... and the object returned';
+  '... and the object returned';
 
 use aliased 'Really::Long::PackageName' => 'PackageName', qw/foo bar baz/;
 
 ok defined &PackageName,
-    'We should be able to pass an array ref as an import list';
+  'We should be able to pass an array ref as an import list';
 foreach my $method (qw/foo bar baz/) {
     no strict 'refs';
-    is &$method, $method,
-        '... and it should behave as expected';
+    is &$method, $method, '... and it should behave as expected';
 }
 

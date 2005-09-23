@@ -1,27 +1,62 @@
 package aliased;
-$VERSION = '0.11';
+$VERSION = '0.20';
+
+require Exporter;
+@ISA    = qw(Exporter);
+@EXPORT = qw(alias);
 
 use strict;
 
 sub import {
-    my ($class, $package, $alias, @import) = @_;
-    require Carp && Carp::croak("You must supply a package name to aliased")
-        unless defined $package;
-    $alias ||= _get_alias($package);
-    {
-        local $SIG{'__DIE__'};
-        my $callpack = caller(0);
-        eval "package $callpack; require $package; sub $alias () { '$package' }";
-        die $@ if $@;
+    my ( $class, $package, $alias, @import ) = @_;
+
+    if ( @_ <= 1 ) {
+        $class->export_to_level(1);
+        return;
     }
-    my $import_method = $package->can('import');
-        @_ = ($package, @import);
-    goto $import_method if $import_method;
+
+    my $callpack = caller(0);
+
+    _load_alias( $package, $callpack, @import );
+    _make_alias( $package, $callpack, $alias );
 }
 
 sub _get_alias {
     my $package = shift;
-    $package    =~ s/.*(?:::|')//;
+    $package =~ s/.*(?:::|')//;
+    return $package;
+}
+
+sub _make_alias {
+    my ( $package, $callpack, $alias ) = @_;
+
+    $alias ||= _get_alias($package);
+
+    local $SIG{__DIE__};
+    eval qq{
+        package $callpack;
+        sub $alias () { '$package' }
+    };
+    die $@ if $@;
+}
+
+sub _load_alias {
+    my ( $package, $callpack, @import ) = @_;
+
+    local $SIG{'__DIE__'};
+    my $code = @import == 0
+      ? "package $callpack; use $package;"
+      : "package $callpack; use $package (\@import)";
+    eval $code;
+    die $@ if $@;
+}
+
+sub alias {
+    my ( $package, @import ) = @_;
+
+    my $callpack = scalar caller(0);
+    _load_alias( $package, $callpack, @import );
+
     return $package;
 }
 
@@ -34,20 +69,31 @@ aliased - Use shorter versions of class names.
 
 =head1 SYNOPSIS
 
+  # Class name interface
   use aliased 'My::Company::Namespace::Customer';
   my $cust = Customer->new;
 
   use aliased 'My::Company::Namespace::Preferred::Customer' => 'Preferred';
   my $pref = Preferred->new;
 
+
+  # Variable interface
+  use aliased;
+  my $Customer  = alias "My::Other::Namespace::Customer";
+  my $cust      = $Customer->new;
+
+  my $Preferred = alias "My::Other::Namespace::Preferred::Customer";
+  my $pref      = $Preferred->new;  
+
+
 =head1 DESCRIPTION
 
 C<aliased> is simple in concept but is a rather handy module.  It loads the
-class you specify and exports into your namespace a subroutine that returns the
-class name.  You can explicitly alias the class to another name or, if you
+class you specify and exports into your namespace a subroutine that returns
+the class name.  You can explicitly alias the class to another name or, if you
 prefer, you can do so implicitly.  In the latter case, the name of the
-subroutine is the last part of the class name.  Thus, it does something similar
-to the following:
+subroutine is the last part of the class name.  Thus, it does something
+similar to the following:
 
   #use aliased 'Some::Annoyingly::Long::Module::Name::Customer';
 
@@ -66,8 +112,8 @@ done with a subroutine and not with typeglobs and weird namespace munging.)
 
 Note that this is B<only> for C<use>ing OO modules.  You cannot use this to
 load procedural modules.  See the L<Why OO Only?|Why OO Only?> section.  Also,
-don't let the version number fool you.  This code is ridiculously simple and is
-just fine for most use.
+don't let the version number fool you.  This code is ridiculously simple and
+is just fine for most use.
 
 =head2 Implicit Aliasing
 
@@ -75,10 +121,10 @@ The most common use of this module is:
 
   use aliased 'Some::Module::name';
 
-C<aliased> will  allow you to reference the class by the last part of the class
-name.  Thus, C<Really::Long::Name> becomes C<Name>.  It does this by exporting
-a subroutine into your namespace with the same name as the aliased name.  This
-subroutine returns the original class name.
+C<aliased> will  allow you to reference the class by the last part of the
+class name.  Thus, C<Really::Long::Name> becomes C<Name>.  It does this by
+exporting a subroutine into your namespace with the same name as the aliased
+name.  This subroutine returns the original class name.
 
 For example:
 
@@ -92,8 +138,8 @@ name, not just the constructor.
 
 Sometimes two class names can cause a conflict (they both end with C<Customer>
 for example), or you already have a subroutine with the same name as the
-aliased name.  In that case, you can make an explicit alias by stating the name
-you wish to alias to:
+aliased name.  In that case, you can make an explicit alias by stating the
+name you wish to alias to:
 
   use aliased 'Original::Module::Name' => 'NewName';
 
@@ -119,9 +165,9 @@ use the new module by only changing one line of code.
 
 =head2 Import Lists
 
-Sometimes, even with an OO module, you need to specify extra arguments when using
-the module.  When this happens, simply use L<Explicit Aliasing> followed by the
-import list:
+Sometimes, even with an OO module, you need to specify extra arguments when
+using the module.  When this happens, simply use L<Explicit Aliasing> followed
+by the import list:
 
 Snippet 1:
 
@@ -134,24 +180,59 @@ Snippet 2 (equivalent to snippet 1):
   my $o = Name->some_class_method;
 
 B<Note>:  remember, you cannot use import lists with L<Implicit Aliasing>.  As
-a result, you may simply prefer to only use L<Explicit Aliasing> as a matter of
-style.
+a result, you may simply prefer to only use L<Explicit Aliasing> as a matter
+of style.
+
+=head2 alias()
+
+    my $alias = alias($class);
+    my $alias = alias($class, @imports);
+
+alias() is an alternative to C<use aliased ...> which uses less magic and
+avoids some of the ambiguities.
+
+Like C<use aliased> it C<use>s the $class (pass in @imports, if given) but
+instead of providing an C<Alias> constant it simply returns a scalar set to
+the $class name.
+
+    my $thing = alias("Some::Thing::With::A::Long::Name");
+
+    # Just like Some::Thing::With::A::Long::Name->method
+    $thing->method;
+
+The use of a scalar instead of a constant avoids any possible ambiguity
+when aliasing two similar names:
+
+    # No ambiguity despite the fact that they both end with "Name"
+    my $thing = alias("Some::Thing::With::A::Long::Name");
+    my $other = alias("Some::Other::Thing::With::A::Long::Name");
+
+and there is no magic constant exported into your namespace.
+
+The only caveat is loading of the $class happens at run time.  If $class
+exports anything you might want to ensure it is loaded at compile time with:
+
+    my $thing;
+    BEGIN { $thing = alias("Some::Thing"); }
+
+However, since OO classes rarely export this should not be necessary.
+
 
 =head2 Why OO Only?
 
-Some people have asked why this code only support object-oriented modules (OO).
-If I were to support normal subroutines, I would have to allow the following
-syntax:
+Some people have asked why this code only support object-oriented modules
+(OO).  If I were to support normal subroutines, I would have to allow the
+following syntax:
 
   use aliased 'Some::Really::Long::Module::Name';
   my $data = Name::data();
 
 That causes a serious problem.  The only (reasonable) way it can be done is to
-handle the aliasing via typeglobs.  Thus, instead of a subroutine that provides
-the class name, we alias one package to another (as the L<namespace|namespace>
-module does.)  However, we really don't want to simply alias one package to another
-and wipe out namespaces willy-nilly.  By merely exporting a single subroutine 
-to a namespace, we minimize the issue. 
+handle the aliasing via typeglobs.  Thus, instead of a subroutine that
+provides the class name, we alias one package to another (as the
+L<namespace|namespace> module does.)  However, we really don't want to simply
+alias one package to another and wipe out namespaces willy-nilly.  By merely
+exporting a single subroutine to a namespace, we minimize the issue. 
 
 Fortunately, this doesn't seem to be that much of a problem.  Non-OO modules
 generally support exporting of the functions you need and this eliminates the
@@ -167,7 +248,7 @@ There are no known bugs in this module, but feel free to email me reports.
 
 =head1 SEE ALSO
 
-The L<namespace|namespace> module.
+The L<namespace> module.
 
 =head1 THANKS
 
@@ -176,9 +257,7 @@ me to replicate the functionality of some of their internal code.
 
 =head1 AUTHOR
 
-Curtis Poe, E<lt>eop_divo_sitruc@yahoo.comE<gt>
-
-Reverse the name to email me.
+Curtis Poe, C<< ovid [at] cpan [dot] org >>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -1,5 +1,9 @@
 Revision history for Perl extension aka.
 
+0.12  20050923
+      Add pod and pod coverage tests
+      Added patch from Schwern to allow aliasing to a scalar
+
 0.10  Wed Jan 5
 
       Changed name to 'aka' due to general consensus on the
