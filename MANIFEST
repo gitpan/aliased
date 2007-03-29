@@ -7,6 +7,8 @@ META.yml			Module meta-data (added by MakeMaker)
 README
 t/10aliased.t
 t/20import.t
+t/30sigdie.t
+t/lib/HasSigDie.pm
 t/lib/Really/Long/Module/Conflicting/Name.pm
 t/lib/Really/Long/Module/Name.pm
 t/lib/Really/Long/Name.pm

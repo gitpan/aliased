@@ -2,13 +2,13 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
-  'PL_FILES' => {},
-  'INSTALLDIRS' => 'site',
   'NAME' => 'aliased',
-  'EXE_FILES' => [],
   'VERSION_FROM' => 'lib/aliased.pm',
   'PREREQ_PM' => {
-    'Test::More' => '0.6'
-  }
+    'Test::More' => '0'
+  },
+  'INSTALLDIRS' => 'site',
+  'EXE_FILES' => [],
+  'PL_FILES' => {}
 )
 ;

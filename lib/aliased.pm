@@ -1,5 +1,5 @@
 package aliased;
-$VERSION = '0.20';
+$VERSION = '0.21';
 
 require Exporter;
 @ISA    = qw(Exporter);
@@ -43,12 +43,19 @@ sub _make_alias {
 sub _load_alias {
     my ( $package, $callpack, @import ) = @_;
 
-    local $SIG{'__DIE__'};
-    my $code = @import == 0
-      ? "package $callpack; use $package;"
-      : "package $callpack; use $package (\@import)";
-    eval $code;
-    die $@ if $@;
+    my $sigdie;
+    {
+        local $SIG{__DIE__};
+        my $code = @import == 0
+          ? "package $callpack; use $package;"
+          : "package $callpack; use $package (\@import)";
+        eval $code;
+        die $@ if $@;
+        $sigdie = $SIG{__DIE__};
+    }
+
+    # Make sure a global $SIG{__DIE__} makes it out of the localization.
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
 }
 
 sub alias {
