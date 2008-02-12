@@ -7,11 +7,11 @@ my $builder = Module::Build->new(
     license             => 'perl',
     dist_author         => 'Curtis "Ovid" Poe <ovid@cpan.org>',
     dist_version_from   => 'lib/aliased.pm',
+    perl                => 5.006,
     requires => {
         'Test::More' => 0,
     },
     add_to_cleanup      => [ 'aliased-*' ],
-    create_makefile_pl  => 'traditional',
 );
 
 $builder->create_build_script();

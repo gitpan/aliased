@@ -1,4 +1,7 @@
-Revision history for Perl extension aka.
+Revision history for Perl extension aliased.
+
+0.21  12 February, 2008
+      Preserve $SIG{__DIE__} behavior just as if aliased had not been used.
 
 0.21  29 March, 2007
       Applied $SIG{__DIE__} patch from Schwern and tightened up the test. 
