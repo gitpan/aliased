@@ -1,6 +1,6 @@
 package aliased;
 
-our $VERSION = '0.30_01';
+our $VERSION = '0.31';
 $VERSION = eval $VERSION;
 
 require Exporter;
@@ -38,8 +38,12 @@ sub _make_alias {
 
     $alias ||= _get_alias($package);
 
+    my $destination = $alias =~ /::/
+      ? $alias
+      : "$callpack\::$alias";
+
     no strict 'refs';
-    *{ join q{::} => $callpack, $alias } = sub () { $package };
+    *{ $destination } = sub () { $package };
 }
 
 sub _load_alias {
@@ -100,7 +104,7 @@ aliased - Use shorter versions of class names.
 
 =head1 VERSION
 
-0.30
+0.31
 
 =head1 SYNOPSIS
 
