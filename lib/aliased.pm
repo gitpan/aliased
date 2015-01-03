@@ -1,12 +1,11 @@
-package aliased;
-# git description: v0.32-9-ge3824a4
-
+package aliased; # git description: v0.33-3-g0a61221
 # ABSTRACT: Use shorter versions of class names.
-{ our $VERSION = '0.33'; }
+$aliased::VERSION = '0.34';
 require Exporter;
 @EXPORT = qw(alias prefix);
 
 use strict;
+use warnings;
 
 sub _croak {
     require Carp;
@@ -109,7 +108,7 @@ aliased - Use shorter versions of class names.
 
 =head1 VERSION
 
-version 0.33
+version 0.34
 
 =head1 SYNOPSIS
 

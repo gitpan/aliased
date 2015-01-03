@@ -78,7 +78,7 @@ EOW
         "Curtis \"Ovid\" Poe <ovid\@cpan.org>"
       ],
       "dist_name" => "aliased",
-      "dist_version" => "0.33",
+      "dist_version" => "0.34",
       "license" => "perl",
       "module_name" => "aliased",
       "recommends" => {},
@@ -87,7 +87,8 @@ EOW
         "Carp" => 0,
         "Exporter" => 0,
         "perl" => "5.006",
-        "strict" => 0
+        "strict" => 0,
+        "warnings" => 0
       },
       "script_files" => [],
       "test_requires" => {
@@ -97,8 +98,7 @@ EOW
         "Test::More" => 0,
         "if" => 0,
         "lib" => 0,
-        "perl" => "5.006",
-        "warnings" => 0
+        "perl" => "5.006"
       }
     );
 
@@ -110,8 +110,7 @@ EOW
       "Test::More" => 0,
       "if" => 0,
       "lib" => 0,
-      "perl" => "5.006",
-      "warnings" => 0
+      "perl" => "5.006"
     );
 
 

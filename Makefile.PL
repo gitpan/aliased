@@ -77,7 +77,8 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "Carp" => 0,
     "Exporter" => 0,
-    "strict" => 0
+    "strict" => 0,
+    "warnings" => 0
   },
   "TEST_REQUIRES" => {
     "B" => 0,
@@ -85,10 +86,9 @@ my %WriteMakefileArgs = (
     "File::Spec" => 0,
     "Test::More" => 0,
     "if" => 0,
-    "lib" => 0,
-    "warnings" => 0
+    "lib" => 0
   },
-  "VERSION" => "0.33",
+  "VERSION" => "0.34",
   "test" => {
     "TESTS" => "t/*.t"
   }
